@@ -10,12 +10,6 @@ import tensorflow as tf
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
-import keras
-from keras.models import Sequential
-from keras.layers import Dense, Dropout
-
-import matplotlib
-matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 
 from sklearn.cluster import KMeans
@@ -46,7 +40,6 @@ df = df.drop([0], axis=0)
 total_rows = len(df.index)
 df = df.drop([total_rows], axis=0)
 
-
 # delete the date column
 df = df.drop(["Date", "Source"], axis=1)
 
@@ -59,60 +52,66 @@ df = df.replace({0: None})
 # delete rows which are fully empty
 df = df.dropna(how='all')
 
-
 # replace empty entries with zero
-#df = df.dropna()
-df = df.replace({None: 0})
+df = df.dropna()
+#df = df.replace({None: 0})
 
 # create target
 selected_column = df[["Cu Recovery"]]
 target = selected_column.copy()
 
-#print df.shape
 
-# create features, 3 columns, Cu(hg), %Cu, and Cu in cu
-features = df.drop(['Pb(hg)','Zn(hg)','Ag(hg)','Delivered to Plant','Milled','% Pb',
-                    'Pb Recovery','% Zn','Zn Recovery','tons Ag','Ag Recovery', 'Cu Recovery',
-                    'Pb in Cu','Zn in Cu','Ag in Cu','Cu in Cu','Oil in feed','+150 microns','eH'], axis=1)
+# create features by deleting the Cu Recovery, Oil in feed, +150 microns and eH columns
+features = df.drop(["Cu Recovery",'tons Ag','Ag Recovery','Oil in feed','+150 microns','eH'], axis=1)
 
 
-#print features.tail(n=10)
-#print target.tail(n=10)
+
+kmeans = KMeans(n_clusters=18).fit(features)
+centroids = kmeans.cluster_centers_
+print(centroids)
+
+plt.scatter(df['x'], df['y'], c= kmeans.labels_.astype(float), s=50, alpha=0.5)
+plt.scatter(centroids[:, 0], centroids[:, 1], c='red', s=50)
+plt.show()
+
+
 
 # now add this code to the next cell and run to split your training and testing data to the specified ratio
-features_train, features_test, target_train, target_test = train_test_split(features, target, test_size=0.3)
+#features_train, features_test, target_train, target_test = train_test_split(features, target, test_size=0.2)
 # validation data
 #features_train, features_validation, target_train, target_validation = train_test_split(features_train, target_train, test_size=0.2)
 
 #print features_train
-# building an artificial neural network model
-model = Sequential()
+
 # ML model, creating layers
-model.add(Dense(16, input_dim=3, activation='relu'))
+#model.add(Dense(16, input_dim=16, activation='relu'))
 #model.add(Dense(16, activation='relu'))
-model.add(Dropout(0.5))
+#model.add(Dropout(0.5))
 #model.add(Dense(16, activation='relu'))
-model.add(Dense(1))
+#model.add(Dense(1, activation=None))
 
 #print features
 
 # to scale the training set and the test set, add this code to the notebook cell and run it:
-features_train = sc.fit_transform(features_train)
-#features_test = sc.transform(features_test)
-target_train = sc.fit_transform(target_train)
-#target_test = sc.transform(target_test)
+#features_train = sc.fit_transform(features_train)
+#features_test = sc.fit_transform(features_test)
+#target_train = sc.fit_transform(target_train)
+#target_test = sc.fit_transform(target_test)
 
 # apply a gradient descent to the neural network
-model.compile(optimizer= "adam",loss = "binary_crossentropy",metrics = ["accuracy"])
+#model.compile(optimizer= "adam",loss = "binary_crossentropy",metrics = ["accuracy"])
 
 # train model using to your the training data
-model.fit(features_train, target_train, batch_size=10, epochs=10)
+#model.fit(features_train, target_train, batch_size=10, epochs=10)
+
+#validation_data=(features_validation, target_validation))
 
 
-prediction_features = model.predict(features_test)
-performance = model.evaluate(features_test, target_test)
 
-print performance
+#prediction_features = model.predict(features_test)
+#performance = model.evaluate(features_test, target_test)
+
+#print prediction_features
 
 
 #print features_train
@@ -121,16 +120,15 @@ print performance
 #print target_train.shape
 #print features_test.shape
 #print target_test.shape
+#print features_validation.shape
+#print target_validation.shape
 
 
-
-# you can now start adding layers to your network. Run this code in your next cell
-#classifier.add(Dense(12, kernel_initializer = "uniform",activation = "relu", input_dim=21))
-#classifier.add(Dense(8, kernel_initializer = "uniform", activation = 'relu'))
-#classifier.add(Dense(1, kernel_initializer = "uniform",activation = "sigmoid"))
-
-
-
-#model.summary()
-
-
+#print target.values
+#print target.dtypes
+#print df.isnull()
+#print df.isnull().sum()
+#print features.head(n=60)
+#print features.loc[2]
+#print target
+#print (features["Pb(hg)"])
